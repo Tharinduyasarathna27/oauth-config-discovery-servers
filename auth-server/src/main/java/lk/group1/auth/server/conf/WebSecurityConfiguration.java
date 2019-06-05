@@ -48,10 +48,14 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.addFilterBefore(new CustomFilter(), ChannelProcessingFilter.class);
+        http.addFilterBefore(new CorsFilter(), ChannelProcessingFilter.class);
         http.authorizeRequests()
-                .antMatchers("/oauth/**").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers("/oauth/**","/**")
+                .permitAll()
+                .anyRequest()
+                .fullyAuthenticated()
+                .and()
+                .httpBasic()
                 .and()
                 .csrf().disable();
                 //.cors().configurationSource(corsConfigurationSource());
