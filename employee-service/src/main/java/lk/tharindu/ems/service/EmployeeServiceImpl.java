@@ -3,6 +3,8 @@ package lk.tharindu.ems.service;
 import java.util.List;
 import java.util.Optional;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import lk.tharindu.ems.hystrix.AllocationCommand;
 import lk.tharindu.ems.model.Allocation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -41,34 +43,55 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public List<Employee> fetchAllEmployee(){
 		return employeeRepository.findAll();
 	}
-	
-	public Employee fetchEmployee(Employee employee) {
+
+
+	//@HystrixCommand(fallbackMethod = "fetchEmployeesFallBack")
+	public Employee fetchEmployee(Employee employee, HttpHeaders httpHeaders) {
 		Optional<Employee> optionalEmployee = employeeRepository.findById(employee.getId());
 		if (optionalEmployee.isPresent()) {
-			// fetch project alllocation
-	//		RestTemplate restTemplate=new RestTemplate();
-			HttpHeaders httpHeaders=new HttpHeaders();
 
-			//extract token from context
-			OAuth2AuthenticationDetails oAuth2AuthenticationDetails =(OAuth2AuthenticationDetails)
-					SecurityContextHolder.getContext().getAuthentication().getDetails();
+               Employee employee1= optionalEmployee.get();
+//					 Allocation[] allocations=fetchEmployeesAllocation(optionalEmployee.get());
+			AllocationCommand allocationCommand= new AllocationCommand(employee1,httpHeaders,restTemplate);
 
-			System.out.println(">>>>"+oAuth2AuthenticationDetails.getTokenValue());
-			httpHeaders.add("Authorization","bearer".concat(oAuth2AuthenticationDetails.getTokenValue()));
+			Allocation[] allocation = allocationCommand.execute();
+					 employee1.setAllocation(allocation);
 
-			//
-			ResponseEntity<Allocation[]> responseEntity;
-			HttpEntity<String> httpEntity=new HttpEntity<>("",httpHeaders);
-			 responseEntity=restTemplate.exchange("http://allocation-service/emscloud/allocations/".
-					 concat(employee.getId().toString()),HttpMethod.GET,httpEntity, Allocation[].class);
-
-
-					 Employee employee1= optionalEmployee.get();
-					 employee1.setAllocation(responseEntity.getBody());
 			return employee1;
 		}else {
 			return null;
 		}
 	}
 
+	public Employee fetchEmployeesFallBack(Employee employee,HttpHeaders httpHeaders){
+		 Employee employee1=new Employee();
+		 employee1.setName("Error");
+		 return employee1;
+	}
+
+//	@HystrixCommand(fallbackMethod = "fetchEmployeesAllocationFallBack")
+//	public Allocation[] fetchEmployeesAllocation(Employee employee) {
+//		// fetch project alllocation
+//		//		RestTemplate restTemplate=new RestTemplate();
+//		HttpHeaders httpHeaders=new HttpHeaders();
+//
+//		//extract token from context
+//		OAuth2AuthenticationDetails oAuth2AuthenticationDetails =(OAuth2AuthenticationDetails)
+//				SecurityContextHolder.getContext().getAuthentication().getDetails();
+//
+//		System.out.println(">>>>"+oAuth2AuthenticationDetails.getTokenValue());
+//		httpHeaders.add("Authorization","bearer".concat(oAuth2AuthenticationDetails.getTokenValue()));
+//
+//		//
+//		ResponseEntity<Allocation[]> responseEntity;
+//		HttpEntity<String> httpEntity=new HttpEntity<>("",httpHeaders);
+//		responseEntity=restTemplate.exchange("http://allocation-service/emscloud/allocations/".
+//				concat(employee.getId().toString()),HttpMethod.GET,httpEntity, Allocation[].class);
+//		return responseEntity.getBody();
+//	}
+//
+//	public Allocation[] fetchEmployeesAllocationFallBack(Employee employee) {
+//
+//		return new Allocation[1];
+//	}
 }

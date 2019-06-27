@@ -1,5 +1,8 @@
 package lk.tharindu.ems.model;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import java.util.List;
 
 import javax.persistence.*;
@@ -12,20 +15,21 @@ public class Employee {
 	 Integer id;
 	 String name;
 	 
-	 @OneToOne(cascade = CascadeType.ALL)
+	 @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
 	 Address address;
 	 
-	 @OneToMany(mappedBy = "employee",cascade = CascadeType.ALL)
+	 @OneToMany(mappedBy = "employee",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
 	 List<Telephone> telephones;
 
 	 @Transient
 	 Allocation[] allocation;
 	 
 
-	@ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
 	@JoinTable(name = "employee_project",
 	joinColumns = @JoinColumn(name="eid",referencedColumnName = "id"),
 	inverseJoinColumns = @JoinColumn(name="pid", referencedColumnName = "id"))
+	@Fetch(value = FetchMode.SUBSELECT)
 	 List<Project> projects;
 	 
 	public Integer getId() {

@@ -19,3 +19,9 @@ security:
     client:
       client-id: web
       client-secret: web
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'

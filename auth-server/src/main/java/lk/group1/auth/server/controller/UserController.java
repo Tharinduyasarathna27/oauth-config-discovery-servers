@@ -5,10 +5,12 @@ import lk.group1.auth.server.model.User;
 import lk.group1.auth.server.service.UserDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/oauth")
+
 public class UserController {
     @Autowired
     private UserDetailServiceImpl userDetailServiceimpl;
